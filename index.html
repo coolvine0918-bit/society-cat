@@ -2,7 +2,8 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 📱 태블릿 최적화 1: 더블 탭 줌 방지 및 화면 크기 고정 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>고양이와 함께하는 사회 용어 대탐험!</title>
     <!-- Tailwind CSS 로드 -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,13 +15,22 @@
     <style>
         body {
             font-family: 'Galmuri11', sans-serif;
-            background-color: #2d3748; /* 어두운 배경 */
+            background-color: #2d3748; 
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
             color: #333;
+            /* 📱 태블릿 최적화 2: 당겨서 새로고침(Pull-to-refresh) 방지 */
+            overscroll-behavior-y: contain; 
+        }
+
+        /* 텍스트 드래그 방지 및 터치 최적화 */
+        .no-select {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .game-boy {
@@ -40,14 +50,13 @@
         }
 
         .screen {
-            background-color: #9bbc0f; /* 클래식 게임보이 스크린 색상 */
+            background-color: #9bbc0f; 
             border: 4px solid #8bac0f;
             border-radius: 5px;
             position: relative;
             overflow: hidden;
         }
 
-        /* 픽셀 스타일 말주머니 */
         .speech-bubble {
             background: #fff;
             border: 4px solid #000;
@@ -75,13 +84,14 @@
             z-index: 10;
         }
 
-        /* 레트로 버튼 스타일 */
         .retro-btn {
             background-color: #fff;
             border: 4px solid #000;
             box-shadow: 0px 4px 0px #000;
             transition: all 0.1s;
             text-align: left;
+            /* 📱 태블릿 최적화 3: 버튼 터치 딜레이 및 더블 탭 방지 */
+            touch-action: manipulation; 
         }
         .retro-btn:active {
             transform: translateY(4px);
@@ -94,14 +104,11 @@
             box-shadow: 0px 4px 0px #000;
         }
 
-        /* 고양이 애니메이션 */
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
         }
-        .cat-bounce {
-            animation: bounce 0.5s ease-in-out infinite;
-        }
+        .cat-bounce { animation: bounce 0.5s ease-in-out infinite; }
         
         @keyframes happy-dance {
             0% { transform: rotate(0deg) scale(1); }
@@ -110,98 +117,107 @@
             75% { transform: rotate(-15deg) scale(1.1); }
             100% { transform: rotate(0deg) scale(1); }
         }
-        .cat-happy {
-            animation: happy-dance 0.8s ease-in-out;
-        }
+        .cat-happy { animation: happy-dance 0.8s ease-in-out; }
 
-        /* 모달 및 깜빡임 효과 */
-        .modal-overlay {
-            background-color: rgba(0, 0, 0, 0.85);
-        }
+        .modal-overlay { background-color: rgba(0, 0, 0, 0.85); }
         @keyframes blink {
             0%, 100% { opacity: 1; }
             50% { opacity: 0; }
         }
-        .blink-text {
-            animation: blink 1s infinite;
+        .blink-text { animation: blink 1s infinite; }
+
+        /* 📱 미니게임 터치 영역 스크롤 완벽 차단 */
+        #mg-playarea {
+            touch-action: none; 
+        }
+        /* 쥐를 누르기 쉽게 크기 확대 (반응형) */
+        #mg-mouse {
+            -webkit-tap-highlight-color: transparent;
         }
     </style>
 </head>
-<body class="p-4">
+<body class="p-2 sm:p-4 no-select">
 
-    <!-- 메인 게임기 컨테이너 -->
-    <div class="game-boy w-full max-w-md p-4 mx-auto flex flex-col gap-6">
+    <!-- 📱 태블릿 화면에 맞춰 컨테이너 크기 확장 (max-w-md -> max-w-lg md:max-w-xl) -->
+    <div class="game-boy w-full max-w-lg md:max-w-xl p-3 sm:p-5 mx-auto flex flex-col gap-4 md:gap-6">
         
         <!-- 상단 장식 -->
-        <div class="flex justify-between items-center px-4 pt-2 text-slate-500 text-xs uppercase font-bold tracking-widest">
+        <div class="flex justify-between items-center px-4 pt-2 text-slate-500 text-xs md:text-sm uppercase font-bold tracking-widest hidden sm:flex">
             <span>Dot Matrix</span>
             <span>With Stereo Sound</span>
         </div>
 
         <!-- 게임 스크린 -->
         <div class="screen-container">
-            <div class="screen h-80 flex flex-col p-3 text-black">
+            <!-- 📱 태블릿에서 화면이 더 길고 시원하게 보이도록 높이 조정 (h-80 -> h-[50vh] min-h-[350px]) -->
+            <div class="screen h-[50vh] min-h-[350px] flex flex-col p-3 md:p-4 text-black relative">
                 
-                <!-- 상단 정보바 (스테이지 및 진행도) -->
+                <!-- 상단 정보바 -->
                 <div class="flex justify-between items-center border-b-4 border-black pb-1 mb-2">
-                    <span id="stage-info" class="text-sm font-bold">Stage 1/5</span>
-                    <span id="score-info" class="text-sm font-bold">점수: 0</span>
+                    <span id="stage-info" class="text-sm md:text-base font-bold">Stage 1/5</span>
+                    <span id="score-info" class="text-sm md:text-base font-bold">정답: 0</span>
                 </div>
 
-                <!-- 말주머니 영역 -->
-                <div class="speech-bubble p-3 text-sm min-h-[80px] flex items-center mb-4 leading-relaxed">
+                <!-- 퀴즈 모드: 말주머니 -->
+                <div class="speech-bubble p-3 md:p-4 text-sm md:text-base min-h-[80px] md:min-h-[100px] flex items-center mb-4 leading-relaxed">
                     <span id="question-text">안녕? 난 코딩냥이야! 게임을 시작하려면 아래 버튼을 눌러줘!</span>
                 </div>
 
-                <!-- 고양이 및 획득 아이템 영역 -->
+                <!-- 퀴즈 모드: 고양이 영역 -->
                 <div class="flex-1 flex justify-center items-end relative pb-4">
-                    <!-- 획득한 아이템 표시 영역 -->
-                    <div id="reward-area" class="absolute top-0 left-0 w-full flex justify-center gap-2 text-2xl">
-                        <!-- 예: 🎀 🐟 🧶 🐭 👑 -->
-                    </div>
                     <!-- 고양이 캐릭터 -->
-                    <div id="cat-character" class="text-7xl">🐱</div>
+                    <div id="cat-character" class="text-7xl md:text-8xl">🐱</div>
                 </div>
+
+                <!-- 🚀 쥐 잡기 미니게임 화면 (태블릿 터치 구역) -->
+                <div id="minigame-screen" class="absolute inset-0 bg-[#9bbc0f] z-20 hidden flex-col p-2 md:p-3">
+                    <div class="flex justify-between border-b-4 border-black pb-1 mb-2 font-bold text-sm md:text-base">
+                        <span>남은시간: <span id="mg-timer" class="text-red-600">15</span>초</span>
+                        <span>쥐: <span id="mg-score">0</span>마리</span>
+                    </div>
+                    <!-- PC는 고양이 커서, 태블릿은 직접 터치 -->
+                    <div id="mg-playarea" class="flex-1 relative overflow-hidden cursor-[url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'48\' viewport=\'0 0 100 100\' style=\'font-size:24px;\'><text y=\'50%\'>🐱</text></svg>'),_auto]">
+                        <!-- 📱 태블릿 친화적인 큰 쥐 아이콘 (text-5xl md:text-6xl) -->
+                        <div id="mg-mouse" class="absolute text-5xl md:text-6xl transition-all duration-150" style="left: 50%; top: 50%; transform: translate(-50%, -50%); cursor: pointer;" onpointerdown="catchMouse(event)">🐭</div>
+                    </div>
+                </div>
+
             </div>
         </div>
 
-        <!-- 하단 조작부 (선택지 버튼들) -->
-        <div class="flex flex-col gap-3 px-2 pb-4">
+        <!-- 하단 조작부 -->
+        <div class="flex flex-col gap-3 px-2 pb-2">
             <div id="options-container" class="flex flex-col gap-3 hidden">
-                <button class="retro-btn p-3 rounded-lg text-sm font-bold w-full truncate" onclick="checkAnswer(0)" id="btn-0"></button>
-                <button class="retro-btn p-3 rounded-lg text-sm font-bold w-full truncate" onclick="checkAnswer(1)" id="btn-1"></button>
-                <button class="retro-btn p-3 rounded-lg text-sm font-bold w-full truncate" onclick="checkAnswer(2)" id="btn-2"></button>
+                <!-- 📱 버튼 크기를 키워 터치하기 편하게 구성 (p-4, md:p-5, text-base) -->
+                <button class="retro-btn p-4 md:p-5 rounded-lg text-sm md:text-base font-bold w-full truncate" onclick="checkAnswer(0)" id="btn-0"></button>
+                <button class="retro-btn p-4 md:p-5 rounded-lg text-sm md:text-base font-bold w-full truncate" onclick="checkAnswer(1)" id="btn-1"></button>
+                <button class="retro-btn p-4 md:p-5 rounded-lg text-sm md:text-base font-bold w-full truncate" onclick="checkAnswer(2)" id="btn-2"></button>
             </div>
             
-            <!-- 이름 및 학번 입력창 추가 -->
-            <div id="name-input-container" class="flex flex-col gap-2">
-                <input type="text" id="student-id" placeholder="학번 5자리 (예: 10701)" class="p-3 rounded-lg border-4 border-black text-center font-bold">
-                <input type="text" id="student-name" placeholder="이름을 입력하세요" class="p-3 rounded-lg border-4 border-black text-center font-bold">
+            <!-- 이름 및 학번 입력창 -->
+            <div id="name-input-container" class="flex flex-col gap-2 md:gap-3">
+                <input type="number" id="student-id" placeholder="학번 5자리 (예: 10701)" class="p-3 md:p-4 rounded-lg border-4 border-black text-center font-bold text-base md:text-lg">
+                <input type="text" id="student-name" placeholder="이름을 입력하세요" class="p-3 md:p-4 rounded-lg border-4 border-black text-center font-bold text-base md:text-lg">
             </div>
 
-            <!-- 시작 버튼 -->
-            <button id="start-btn" class="retro-btn p-4 rounded-lg text-lg font-bold w-full text-center bg-yellow-300 border-black blink-text" onclick="startGame()">
+            <button id="start-btn" class="retro-btn p-4 md:p-5 rounded-lg text-lg md:text-xl font-bold w-full text-center bg-yellow-300 border-black blink-text" onclick="startGame()">
                 ▶ 게임 시작하기
             </button>
         </div>
     </div>
 
-    <!-- 스테이지 클리어 / 게임 종료 모달 -->
+    <!-- 모달 화면 -->
     <div id="modal" class="fixed inset-0 modal-overlay flex justify-center items-center hidden z-50 p-4 text-center">
-        <div class="bg-white border-4 border-black p-6 rounded-xl max-w-sm w-full">
-            <h2 id="modal-title" class="text-2xl mb-4 font-bold">스테이지 클리어!</h2>
-            <div id="modal-content" class="text-lg mb-6 leading-relaxed">
-                잘했어! 고양이에게 옷을 선물했어!<br>
-                <span class="text-4xl mt-4 block">🐱🎀</span>
-            </div>
-            <button class="retro-btn p-3 rounded-lg w-full bg-blue-400 text-white font-bold" onclick="nextStage()" id="modal-btn">
-                다음 스테이지로
+        <div class="bg-white border-4 border-black p-6 md:p-8 rounded-xl max-w-sm md:max-w-md w-full">
+            <h2 id="modal-title" class="text-2xl md:text-3xl mb-4 font-bold">안내</h2>
+            <div id="modal-content" class="text-lg md:text-xl mb-6 leading-relaxed">내용</div>
+            <button class="retro-btn p-4 md:p-5 rounded-lg w-full bg-blue-400 text-white font-bold text-lg" onclick="nextStage()" id="modal-btn">
+                확인
             </button>
         </div>
     </div>
 
     <script>
-        // 선생님께서 제공해주신 25개 단어 데이터 (배열)
         const wordData = [
             { word: "기본권", meaning: "헌법에 의해 보장되는 국민의 기본적인 권리" },
             { word: "침해", meaning: "권리나 이익을 함부로 건드려 해를 끼치는 일" },
@@ -215,7 +231,7 @@
             { word: "화해", meaning: "분쟁 당사자가 서로 양보하여 다툼을 끝내기로 합의하는 것" },
             { word: "위자료", meaning: "정신적 고통이나 피해를 입은 것에 대하여 배상으로 지급하는 돈" },
             { word: "헌법재판소", meaning: "공권력에 의해 기본권을 침해당한 사건이 헌법에 보장된 기본권을 침해하였는지 판단하는 기관" },
-            { word: "공권력", meaning: "국가나 공공 단체가 국민에게 명령하고 강제할 수 있는 권력" },
+            { word: "공권력", 구: "국가나 공공 단체가 국민에게 명령하고 강제할 수 있는 권력" },
             { word: "헌법 소원", meaning: "공권력에 의해 기본권을 침해받은 본인이 다른 구제 절차를 거친 후 헌법재판소에 심판을 청구하는 제도" },
             { word: "국가 인권 위원회", meaning: "국가기관에 의한 기본권 침해나 단체에 의한 부당한 차별을 조사하여 바로잡아 주는 기관" },
             { word: "차별", meaning: "합리적인 이유 없이 등급이나 수준 등에 따라 차이를 두어 불이익을 주는 행위" },
@@ -230,96 +246,44 @@
             { word: "행정 심판", meaning: "행정 기관의 잘못된 처분 등으로 권리나 이익을 침해받은 국민이 행정 기관에 제기하는 권리 구제 절차" }
         ];
 
-        // 게임 상태 변수들
-        const GOOGLE_APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_ahXLNlcHgC5mJq1RgEtZSuQI9tqXHtPgmoQaAEEPvKpbb1zp_coUsP6c6KlmXILV/exec"; // ★ 나중에 앱스 스크립트 배포 후 얻게 될 URL을 이곳에 붙여넣습니다!
+        // ★ 앱스 스크립트 배포 URL (선생님의 웹 앱 주소로 변경하세요)
+        const GOOGLE_APP_SCRIPT_URL = ""; 
+
         let studentId = "";
         let studentName = "";
-        let currentStage = 1; // 1 ~ 5
-        let questionIndex = 0; // 0 ~ 24
-        let stageScore = 0; // 현재 스테이지 정답 수
-        let totalScore = 0; // 전체 정답 수
+        let currentStage = 1;
+        let questionIndex = 0;
+        let stageScore = 0;
+        let totalScore = 0;
         let currentOptions = [];
         let typingTimeout;
         let isTyping = false;
-        
-        // 보상 아이템 전체 목록 (이 중에서 랜덤으로 3개가 제시됨)
-        const allRewards = ["🎀", "🐟", "🧶", "🐭", "👑", "🕶️", "🎩", "🍔", "🍕", "🎮", "🍉", "🧸", "🔔", "🎈", "💎", "🌸", "🌭", "🍩", "🎸", "🚀"];
-        const unlockedRewards = [];
 
-        // 배열에서 랜덤하게 N개의 아이템을 뽑는 도우미 함수
-        function getRandomItems(array, count) {
-            const shuffled = [...array].sort(() => 0.5 - Math.random());
-            return shuffled.slice(0, count);
-        }
+        // 미니게임 전역 변수
+        let totalMiceCaught = 0;
+        let currentMgScore = 0;
+        let mgTime = 15;
+        let mgTimerInterval;
+        let mgMoveInterval;
+        let currentMouseSpeed = 1000;
 
-        // DOM 요소 가져오기
         const uiCat = document.getElementById('cat-character');
         const uiQuestion = document.getElementById('question-text');
         const uiStage = document.getElementById('stage-info');
         const uiScore = document.getElementById('score-info');
         const uiOptionsCont = document.getElementById('options-container');
         const uiStartBtn = document.getElementById('start-btn');
-        const uiRewardArea = document.getElementById('reward-area');
-        
         const modal = document.getElementById('modal');
         const modalTitle = document.getElementById('modal-title');
         const modalContent = document.getElementById('modal-content');
         const modalBtn = document.getElementById('modal-btn');
 
-        // 배열 섞기 함수 (Fisher-Yates 알고리즘)
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-        }
-
-        // 말주머니 한 글자씩 타이핑 효과 함수
-        function typeWriterText(text, callback) {
-            clearTimeout(typingTimeout);
-            uiQuestion.innerHTML = "";
-            isTyping = true;
-            let i = 0;
-            
-            // 버튼 비활성화 (타이핑 중 클릭 방지)
-            toggleButtons(true);
-            uiCat.className = "text-7xl cat-bounce"; // 말할 때 끄덕거리는 애니메이션
-            uiCat.innerText = "😺";
-
-            function type() {
-                if (i < text.length) {
-                    uiQuestion.innerHTML += text.charAt(i);
-                    i++;
-                    // 타이핑 속도 조절 (레트로 느낌을 위해 살짝 빠르면서 불규칙하게)
-                    typingTimeout = setTimeout(type, 30 + Math.random() * 20);
-                } else {
-                    isTyping = false;
-                    uiCat.className = "text-7xl"; // 애니메이션 종료
-                    uiCat.innerText = "🐱";
-                    toggleButtons(false); // 버튼 활성화
-                    if (callback) callback();
-                }
-            }
-            type();
-        }
-
-        // 선택지 버튼 활성/비활성 제어
-        function toggleButtons(disabled) {
-            for(let i=0; i<3; i++) {
-                document.getElementById(`btn-${i}`).disabled = disabled;
-            }
-        }
-
-        // 🎵 효과음 생성 함수들 (음량 대폭 증가 및 '야옹~' 소리 추가) 🎵
-        
+        /* --- 효과음 설정 --- */
         function playCorrectSound() {
             if (typeof Tone !== 'undefined') {
-                // 볼륨을 높임 (+8 데시벨)
-                const vol = new Tone.Volume(8).toDestination();
-                // 레트로 게임 느낌의 사각파(square) 소리
+                const vol = new Tone.Volume(10).toDestination();
                 const synth = new Tone.Synth({ oscillator: { type: "square" } }).connect(vol);
                 const now = Tone.now();
-                // "띠-링!" 하고 올라가는 두 개의 짧은 음 (뿌잉 느낌)
                 synth.triggerAttackRelease("C5", "16n", now);
                 synth.triggerAttackRelease("E5", "16n", now + 0.15);
             }
@@ -327,43 +291,64 @@
 
         function playWrongSound() {
             if (typeof Tone !== 'undefined') {
-                // 볼륨을 높임 (+8 데시벨)
-                const vol = new Tone.Volume(8).toDestination();
+                const vol = new Tone.Volume(10).toDestination();
                 const synth = new Tone.Synth({ oscillator: { type: "sawtooth" } }).connect(vol);
-                synth.triggerAttackRelease("C3", "8n"); // 낮고 둔탁한 "띡!" 소리
+                synth.triggerAttackRelease("C3", "8n");
             }
         }
 
-        function playMeowSound() {
+        function playCatchSound() {
             if (typeof Tone !== 'undefined') {
-                // 선물을 받을 때 나는 소리이므로 음량을 더 크게 (+12 데시벨) 설정
-                const vol = new Tone.Volume(12).toDestination();
-                
-                // 부드러운 삼각파를 사용하여 귀여운 동물 목소리 느낌 흉내
-                const synth = new Tone.Synth({
-                    oscillator: { type: "triangle" },
-                    envelope: { attack: 0.1, decay: 0.2, sustain: 0.8, release: 0.4 }
-                }).connect(vol);
-
-                const now = Tone.now();
-                // 높은 음('E5')에서 낮은 음('C4')으로 미끄러지듯 떨어지며 '야~옹' 소리 구현
-                synth.triggerAttack("E5", now);
-                synth.frequency.exponentialRampToValueAtTime("C4", now + 0.3);
-                synth.triggerRelease(now + 0.5);
+                const vol = new Tone.Volume(12).toDestination(); // 더 신나는 타격감
+                const synth = new Tone.Synth({ oscillator: { type: "square" } }).connect(vol);
+                synth.triggerAttackRelease("C6", "32n");
             }
         }
 
-        // 게임 시작 (이름 입력 확인 로직 추가)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function typeWriterText(text, callback) {
+            clearTimeout(typingTimeout);
+            uiQuestion.innerHTML = "";
+            isTyping = true;
+            let i = 0;
+            toggleButtons(true);
+            uiCat.className = "text-7xl md:text-8xl cat-bounce"; 
+            uiCat.innerText = "😺";
+
+            function type() {
+                if (i < text.length) {
+                    uiQuestion.innerHTML += text.charAt(i);
+                    i++;
+                    typingTimeout = setTimeout(type, 30 + Math.random() * 20);
+                } else {
+                    isTyping = false;
+                    uiCat.className = "text-7xl md:text-8xl"; 
+                    uiCat.innerText = "🐱";
+                    toggleButtons(false);
+                    if (callback) callback();
+                }
+            }
+            type();
+        }
+
+        function toggleButtons(disabled) {
+            for(let i=0; i<3; i++) {
+                document.getElementById(`btn-${i}`).disabled = disabled;
+            }
+        }
+
         function startGame() {
-            // 크롬 브라우저 정책상 버튼을 눌렀을 때 오디오 컨텍스트를 활성화해야 합니다.
-            if (typeof Tone !== 'undefined') {
-                Tone.start(); 
-            }
+            if (typeof Tone !== 'undefined') { Tone.start(); }
 
             const idInput = document.getElementById('student-id');
             const nameInput = document.getElementById('student-name');
             if (!idInput.value.trim() || !nameInput.value.trim()) {
-                // 입력을 다 하지 않았을 때 고양이의 귀여운 경고
                 uiQuestion.innerText = "앗! 학번과 이름을 모두 입력해줘야 한다냥! 😿";
                 return;
             }
@@ -378,30 +363,22 @@
             currentStage = 1;
             questionIndex = 0;
             totalScore = 0;
-            unlockedRewards.length = 0;
-            updateRewardDisplay();
+            totalMiceCaught = 0;
             
             loadQuestion();
         }
 
-        // 문제 로드 및 화면 렌더링
         function loadQuestion() {
-            stageScore = stageScore || 0; // 스테이지 점수 초기화 방지용 (nextStage에서 관리)
-            
-            // 상단 정보 업데이트
-            const qNum = (questionIndex % 5) + 1; // 스테이지 내 문제 번호 (1~5)
+            stageScore = stageScore || 0; 
+            const qNum = (questionIndex % 5) + 1;
             uiStage.innerText = `Stage ${currentStage} - 문제 ${qNum}/5`;
             uiScore.innerText = `정답: ${totalScore}`;
 
-            // 현재 문제 데이터 가져오기
             const currentData = wordData[questionIndex];
-            
-            // 오답 2개 무작위 추출 (정답 제외)
             let wrongOptions = wordData.filter(d => d.word !== currentData.word);
             shuffleArray(wrongOptions);
             wrongOptions = wrongOptions.slice(0, 2);
 
-            // 선택지 배열 생성 및 섞기
             currentOptions = [
                 { text: currentData.word, isCorrect: true },
                 { text: wrongOptions[0].word, isCorrect: false },
@@ -409,79 +386,147 @@
             ];
             shuffleArray(currentOptions);
 
-            // 타이핑 효과로 뜻 설명하기
-            typeWriterText(`"${currentData.meaning}"\n\n이게 무슨 뜻이게냥?`);
+            typeWriterText(`"${currentData.meaning || currentData.구}"\n\n이게 무슨 뜻이게냥?`);
 
-            // 버튼 텍스트 설정
             for(let i=0; i<3; i++) {
                 const btn = document.getElementById(`btn-${i}`);
-                // 1., 2., 3. 번호 붙이기
                 btn.innerText = `${i + 1}. ${currentOptions[i].text}`;
-                // 색상 초기화
                 btn.style.backgroundColor = "#fff";
                 btn.style.color = "#000";
             }
         }
 
-        // 정답 체크 로직
         function checkAnswer(selectedIndex) {
-            if (isTyping) return; // 타이핑 중 클릭 무시
+            if (isTyping) return; 
             
             toggleButtons(true);
             const selectedOption = currentOptions[selectedIndex];
             const btn = document.getElementById(`btn-${selectedIndex}`);
             
             if (selectedOption.isCorrect) {
-                // 정답일 경우
-                playCorrectSound(); // 🎵 정답 효과음 재생
-                btn.style.backgroundColor = "#4ade80"; // 녹색
+                playCorrectSound();
+                btn.style.backgroundColor = "#4ade80"; 
                 uiCat.innerText = "😻";
-                uiCat.className = "text-7xl cat-happy"; // 귀여운 포즈 애니메이션
+                uiCat.className = "text-7xl md:text-8xl cat-happy";
                 uiQuestion.innerText = "정답이다냥! 최고다냥! ✨";
                 stageScore++;
                 totalScore++;
             } else {
-                // 오답일 경우
-                playWrongSound(); // 🎵 오답 효과음 재생
-                btn.style.backgroundColor = "#f87171"; // 붉은색
+                playWrongSound();
+                btn.style.backgroundColor = "#f87171"; 
                 btn.style.color = "#fff";
                 uiCat.innerText = "🙀";
-                uiCat.className = "text-7xl";
-                
-                // 정답 단어 찾아주기
+                uiCat.className = "text-7xl md:text-8xl";
                 const correctWord = currentOptions.find(o => o.isCorrect).text;
                 uiQuestion.innerText = `틀렸다냥... 정답은 '${correctWord}' 였다냥 😿`;
             }
             
             uiScore.innerText = `정답: ${totalScore}`;
 
-            // 1.5초 후 다음 문제 또는 스테이지 클리어 처리
             setTimeout(() => {
                 questionIndex++;
-                
-                // 스테이지당 5문제 완료 시
                 if (questionIndex % 5 === 0) {
                     showStageClear();
                 } else {
                     uiCat.innerText = "🐱";
-                    uiCat.className = "text-7xl";
+                    uiCat.className = "text-7xl md:text-8xl";
                     loadQuestion();
                 }
             }, 1500);
         }
 
-        // 보상 아이템 화면 표시 업데이트
-        function updateRewardDisplay() {
-            uiRewardArea.innerHTML = unlockedRewards.map(item => `<span>${item}</span>`).join('');
+        function showStageClear() {
+            modal.classList.remove('hidden');
+            
+            if (currentStage >= 5) {
+                showFinalGameOver();
+            } else {
+                modalTitle.innerText = `스테이지 ${currentStage} 클리어!`;
+                modalContent.innerHTML = `잘했어!<br>보너스 타임: <b>15초 동안 쥐를 잡아라!</b><br><span class="text-5xl mt-4 block">🐱 ⚡ 🐭</span>`;
+                modalBtn.classList.remove('hidden');
+                modalBtn.innerText = "미니게임 시작!";
+                modalBtn.onclick = startMiniGame;
+            }
         }
 
-        // 구글 시트로 데이터 전송 (백엔드 프록시 호출)
-        async function saveScoreToSheet() {
-            // URL이 세팅되지 않았으면 무시 (테스트용)
-            if (!GOOGLE_APP_SCRIPT_URL) {
-                console.log("스크립트 URL이 설정되지 않아 저장을 건너뜁니다.");
-                return;
+        function startMiniGame() {
+            modal.classList.add('hidden');
+            const mgScreen = document.getElementById('minigame-screen');
+            mgScreen.classList.remove('hidden');
+            
+            mgTime = 15;
+            currentMgScore = 0;
+            currentMouseSpeed = 1000;
+            document.getElementById('mg-timer').innerText = mgTime;
+            document.getElementById('mg-score').innerText = currentMgScore;
+            
+            mgTimerInterval = setInterval(() => {
+                mgTime--;
+                document.getElementById('mg-timer').innerText = mgTime;
+                if (mgTime <= 0) endMiniGame();
+            }, 1000);
+
+            moveMouse();
+            setMouseMovement();
+        }
+
+        function setMouseMovement() {
+            clearInterval(mgMoveInterval);
+            mgMoveInterval = setInterval(moveMouse, currentMouseSpeed);
+        }
+
+        function moveMouse() {
+            const area = document.getElementById('mg-playarea');
+            const mouse = document.getElementById('mg-mouse');
+            
+            // 쥐가 밖으로 나가지 않도록 패딩 계산
+            const padding = 50;
+            const maxX = area.clientWidth - padding;
+            const maxY = area.clientHeight - padding;
+            
+            const randomX = Math.max(padding/2, Math.floor(Math.random() * maxX));
+            const randomY = Math.max(padding/2, Math.floor(Math.random() * maxY));
+            
+            mouse.style.left = randomX + 'px';
+            mouse.style.top = randomY + 'px';
+        }
+
+        // 📱 터치 최적화: 클릭 겹침 및 스크롤 방지
+        function catchMouse(e) {
+            // 태블릿/폰에서 쥐를 눌렀을 때 화면이 드래그되거나 클릭이 중복 발생하지 않도록 차단
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
             }
+            
+            if (mgTime <= 0) return;
+
+            playCatchSound();
+            currentMgScore++;
+            totalMiceCaught++;
+            document.getElementById('mg-score').innerText = currentMgScore;
+            
+            currentMouseSpeed = Math.max(300, currentMouseSpeed * 0.85); 
+            
+            moveMouse();
+            setMouseMovement();
+        }
+
+        function endMiniGame() {
+            clearInterval(mgTimerInterval);
+            clearInterval(mgMoveInterval);
+            document.getElementById('minigame-screen').classList.add('hidden');
+            
+            modalTitle.innerText = "보너스 게임 종료!";
+            modalContent.innerHTML = `엄청나다냥!<br>순식간에 쥐를 <b>${currentMgScore}</b>마리 잡았어!<br><span class="text-5xl mt-4 block">😻</span>`;
+            modalBtn.classList.remove('hidden');
+            modalBtn.innerText = "다음 스테이지 퀴즈로";
+            modalBtn.onclick = nextStage;
+            modal.classList.remove('hidden');
+        }
+
+        async function saveScoreToSheet() {
+            if (!GOOGLE_APP_SCRIPT_URL) return;
             
             modalBtn.innerText = "데이터 저장 중... ⏳";
             modalBtn.disabled = true;
@@ -489,18 +534,17 @@
             const data = {
                 studentId: studentId,
                 studentName: studentName,
-                score: totalScore
+                score: totalScore,
+                miniGameScore: totalMiceCaught
             };
 
             try {
-                // 백엔드로 POST 요청 (CORS 오류 방지를 위해 no-cors 모드 사용)
                 await fetch(GOOGLE_APP_SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors', 
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
-                console.log("시트 전송 완료!");
             } catch (error) {
                 console.error('Error!', error);
             } finally {
@@ -509,85 +553,27 @@
             }
         }
 
-        // 스테이지 클리어 모달 표시 (보상 선택 기능 추가)
-        function showStageClear() {
-            modal.classList.remove('hidden');
-            
-            if (currentStage >= 5) {
-                // 마지막 스테이지(5) 클리어 시
-                modalTitle.innerText = "마지막 스테이지 클리어!";
-                if (stageScore >= 3) {
-                    let choices = getRandomItems(allRewards, 3);
-                    let choicesHtml = choices.map(item =>
-                        `<button class="retro-btn p-3 text-4xl mx-2 bg-white rounded-lg hover:bg-gray-200 transition-transform hover:scale-110" onclick="selectReward('${item}', true)">${item}</button>`
-                    ).join('');
-                    modalContent.innerHTML = `5문제 중 ${stageScore}문제를 맞혔어!<br>마지막으로 고양이에게 줄 선물을 골라봐!<br><div class="mt-4 flex justify-center">${choicesHtml}</div>`;
-                    modalBtn.classList.add('hidden'); // 아이템을 무조건 선택하도록 하단 버튼 숨김
-                } else {
-                    modalContent.innerHTML = `5문제 중 ${stageScore}문제를 맞혔어!<br>아쉽지만 마지막 선물은 받을 수 없다냥 😿`;
-                    modalBtn.classList.remove('hidden');
-                    modalBtn.innerText = "최종 결과 보기";
-                    modalBtn.onclick = showFinalGameOver;
-                }
-            } else {
-                // 일반 스테이지(1~4) 클리어 시
-                modalTitle.innerText = `스테이지 ${currentStage} 클리어!`;
-                if (stageScore >= 3) {
-                    // 무작위로 3개의 아이템을 뽑아서 버튼으로 만듦
-                    let choices = getRandomItems(allRewards, 3);
-                    let choicesHtml = choices.map(item =>
-                        `<button class="retro-btn p-3 text-4xl mx-2 bg-white rounded-lg hover:bg-gray-200 transition-transform hover:scale-110" onclick="selectReward('${item}', false)">${item}</button>`
-                    ).join('');
-                    
-                    modalContent.innerHTML = `5문제 중 ${stageScore}문제를 맞혔어!<br>고양이에게 줄 선물을 골라봐!<br><div class="mt-4 flex justify-center">${choicesHtml}</div>`;
-                    modalBtn.classList.add('hidden'); // 아이템을 무조건 선택하도록 하단 버튼 숨김
-                } else {
-                    modalContent.innerHTML = `5문제 중 ${stageScore}문제를 맞혔어!<br>아쉽다냥.. 3문제 이상 맞혀야 선물을 고를 수 있다냥 😿<br><span class="text-4xl mt-4 block">🐱</span>`;
-                    modalBtn.classList.remove('hidden');
-                    modalBtn.innerText = "다음 스테이지로";
-                    modalBtn.onclick = nextStage;
-                }
-            }
-        }
-
-        // 아이템 선택 시 실행되는 함수
-        function selectReward(item, isFinal) {
-            playMeowSound(); // 🎵 귀여운 레트로 '야옹~' 효과음 재생
-            unlockedRewards.push(item);
-            updateRewardDisplay();
-
-            if (isFinal) {
-                showFinalGameOver(); // 마지막 스테이지였다면 게임 종료 화면으로
-            } else {
-                nextStage(); // 아니면 다음 스테이지로
-            }
-        }
-
-        // 최종 게임 종료 화면 및 데이터 전송
         function showFinalGameOver() {
             modalTitle.innerText = "🎉 게임 올 클리어! 🎉";
             
-            let finalMsg = `대단하다냥! 총 25문제 중 ${totalScore}문제를 맞혔다냥!<br>`;
+            let finalMsg = `대단하다냥! 총 25문제 중 ${totalScore}문제를 맞혔어!<br>`;
+            finalMsg += `보너스 게임에서 잡은 쥐는 총 <b>${totalMiceCaught}마리</b>야!<br>`;
+            
             if (totalScore >= 20) {
                 finalMsg += "너는 완벽한 사회 천재다냥! 👑😻<br>";
             } else {
-                finalMsg += "앞으로 조금만 더 복습하면 완벽할 거다냥! 😸<br>";
+                finalMsg += "조금만 더 복습하면 완벽할 거다냥! 😸<br>";
             }
             
-            modalContent.innerHTML = finalMsg + `<span class="text-4xl mt-4 block">🐱${unlockedRewards.join('')}</span>`;
+            modalContent.innerHTML = finalMsg + `<span class="text-5xl mt-4 block">🐱</span>`;
+            modalBtn.classList.remove('hidden'); 
             
-            modalBtn.classList.remove('hidden'); // 다시하기 버튼 표시
-            
-            // ★ 학생이 게임을 끝냈을 때 백엔드 프록시를 통해 구글 시트에 점수 저장
             saveScoreToSheet();
-
             modalBtn.onclick = resetGame;
         }
 
-        // 게임 초기화
         function resetGame() {
             modal.classList.add('hidden');
-            // 초기 화면(이름 입력창)으로 되돌리기
             document.getElementById('name-input-container').classList.remove('hidden');
             document.getElementById('student-id').value = "";
             document.getElementById('student-name').value = "";
@@ -595,13 +581,12 @@
             uiOptionsCont.classList.add('hidden');
         }
 
-        // 다음 스테이지로 넘어가기
         function nextStage() {
             modal.classList.add('hidden');
             currentStage++;
-            stageScore = 0; // 스테이지 점수 초기화
+            stageScore = 0;
             uiCat.innerText = "🐱";
-            uiCat.className = "text-7xl";
+            uiCat.className = "text-7xl md:text-8xl";
             loadQuestion();
         }
     </script>
